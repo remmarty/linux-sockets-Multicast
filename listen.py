@@ -1,10 +1,11 @@
 import socket
+from socket import *
 import queue
-from queue import PriorityQueue
+import re
 
-
-multicast_addr = "224.3.29.71"
-port = 10001
+interface_ip = "192.168.1.8"
+multicast_addr = "224.0.0.1"
+port = 5001
 multicast_grp = (multicast_addr, port)
 
 # Zad. 1
@@ -14,43 +15,51 @@ multicast_grp = (multicast_addr, port)
 #         received_message = data.decode("utf-8")
 #         print(f"Data received: '{received_message}' from {addr}")
 
+
 # Zad. 2
-q1 = queue.PriorityQueue()
-q2 = queue.PriorityQueue()
-q3 = queue.PriorityQueue()
+def value_of(message):
+    value = re.split("(\d+)", message)[1]
+    return int(value)
+
+
 def listen(sock):
+    q1, q2, q3 = [], [], []
+    prev_q1_len, prev_q2_len, prev_q3_len = 0, 0, 0
     while True:
         data, addr = sock.recvfrom(256)
         received_message = data.decode("utf-8")
 
-        if "A1" or "A2" or "A3" in received_message:
-            q1.put(received_message)
-        elif "B1" or "B2" or "B3" in received_message:
-            q1.put(received_message)
-        elif "C1" or "C2" or "C3" in received_message:
-            q1.put(received_message)
-        
-        if q1.qsize() == 3:
-            while not q1.empty():
-                received_message = q1.get()
-                print(f"Data received: '{received_message}' from {addr}")
-        if q2.qsize() == 3:
-            while not q2.empty():
-                received_message = q2.get()
-                print(f"Data received: '{received_message}' from {addr}")
-        if q3.qsize() == 3:
-            while not q3.empty():
-                received_message = q3.get()
-                print(f"Data received: '{received_message}' from {addr}")
+        if "A" in received_message:
+            q1.append(received_message)
+            q1.sort()
+        if "B" in received_message:
+            q2.append(received_message)
+            q2.sort()
+        if "C" in received_message: 
+            q3.append(received_message)
+            q3.sort()
+
+        if len(q1) != 0:
+            if len(q1) == value_of(q1[-1]) and len(q1) != prev_q1_len:
+                print(q1)
+                prev_q1_len = len(q1)
+        if len(q2) != 0:
+            if len(q2) == value_of(q2[-1]) and len(q2) != prev_q2_len:
+                print(q2)
+                prev_q2_len = len(q2)
+        if len(q3) != 0:
+            if len(q3) == value_of(q3[-1]) and len(q3) != prev_q3_len:
+                print(q3)
+                prev_q3_len = len(q3)
+
 
 def main():
     # Create and bind the socket
     try:
-        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock = socket(AF_INET, SOCK_DGRAM)
         sock.bind(multicast_grp)
-        group = socket.inet_aton(multicast_addr)
-        mreq = group + socket.inet_aton("192.168.1.8")
-        sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
+        mreq = inet_aton(multicast_addr) + inet_aton(interface_ip)
+        sock.setsockopt(IPPROTO_IP, IP_ADD_MEMBERSHIP, mreq)
         # Listen to the multicast group messages
         listen(sock)
     except KeyboardInterrupt:
