@@ -6,7 +6,7 @@ multicast_addr = "224.0.0.1"
 port = 5001
 multicast_grp = (multicast_addr, port)
 
-list_of_messages = ["A2", "A1", "C2", "C1", "A3", "C3"]
+list_of_messages = ["B2", "B1", "B3"]
 # One-liner that converts strings from the list to bytes
 messages = [message.encode("utf-8") for message in list_of_messages]
 

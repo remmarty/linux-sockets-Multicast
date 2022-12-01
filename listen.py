@@ -17,10 +17,24 @@ multicast_grp = (multicast_addr, port)
 
 
 # Zad. 2
+def update_lists(q1, q2, q3, message):
+    if "A" in message:
+        q1.append(message); q1.sort()
+    if "B" in message:
+        q2.append(message); q2.sort()
+    if "C" in message: 
+        q3.append(message); q3.sort()
+
 def value_of(message):
     value = re.split("(\d+)", message)[1]
     return int(value)
-
+   
+def print_list(list, prev_len):
+    if len(list) != 0:
+        if len(list) == value_of(list[-1]) and len(list) != prev_len:
+            print(list)
+        elif value_of(list[0]) == 1 and len(list) != prev_len:
+            print(f"['{list[0]}']")
 
 def listen(sock):
     q1, q2, q3 = [], [], []
@@ -28,30 +42,10 @@ def listen(sock):
     while True:
         data, addr = sock.recvfrom(256)
         received_message = data.decode("utf-8")
-
-        if "A" in received_message:
-            q1.append(received_message)
-            q1.sort()
-        if "B" in received_message:
-            q2.append(received_message)
-            q2.sort()
-        if "C" in received_message: 
-            q3.append(received_message)
-            q3.sort()
-
-        if len(q1) != 0:
-            if len(q1) == value_of(q1[-1]) and len(q1) != prev_q1_len:
-                print(q1)
-                prev_q1_len = len(q1)
-        if len(q2) != 0:
-            if len(q2) == value_of(q2[-1]) and len(q2) != prev_q2_len:
-                print(q2)
-                prev_q2_len = len(q2)
-        if len(q3) != 0:
-            if len(q3) == value_of(q3[-1]) and len(q3) != prev_q3_len:
-                print(q3)
-                prev_q3_len = len(q3)
-
+        update_lists(q1, q2, q3, received_message)
+        print_list(q1, prev_q1_len); prev_q1_len = len(q1)
+        print_list(q2, prev_q2_len); prev_q2_len = len(q2)
+        print_list(q3, prev_q3_len); prev_q3_len = len(q3)
 
 def main():
     # Create and bind the socket
